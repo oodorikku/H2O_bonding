@@ -3,19 +3,15 @@ import java.net.*;
 import java.util.*;
 
 public class HydrogenClient {
-    private static final String SERVER_ADDRESS = "localhost";
-    private static final int SERVER_PORT = 12345;
-
     public static void main(String[] args) {
         int N = Integer.parseInt(args[0]);
         String clientType, response, timestamp = "";
 
-        try (Socket socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
+        try (Socket socket = new Socket("localhost", 12345);
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
             out.println("h");
-
             clientType = in.readLine();
             System.out.println("Received: " + clientType);
 
