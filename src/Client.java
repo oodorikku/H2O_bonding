@@ -4,15 +4,9 @@ import java.util.*;
 
 public class Client {
     public static void main(String[] args) {
-        if (args.length < 2) {
-            System.err.println("Usage: java Client <type> <count>");
-            return;
-        }
-
+        String clientType, response, request, logMessage, timestamp = "";
         String type = args[0].toLowerCase();
         int count = Integer.parseInt(args[1]);
-
-        String clientType, response, timestamp = "";
 
         try (Socket socket = new Socket("localhost", 12345);
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
@@ -24,10 +18,10 @@ public class Client {
 
             for (int i = 1; i <= count; i++) {
                 timestamp = new Date().toString();
-                String request = "(" + type.toUpperCase().charAt(0) + i + ", request, " + timestamp + ")";
+                request = "(" + type.toUpperCase().charAt(0) + i + ", request, " + timestamp + ")";
                 out.println(request);
                 timestamp = new Date().toString();
-                String logMessage = "(" + type.toUpperCase().charAt(0) + i + ", request, " + timestamp + ")";
+                logMessage = "(" + type.toUpperCase().charAt(0) + i + ", request, " + timestamp + ")";
                 System.out.println("Sent: " + logMessage);
             }
 
