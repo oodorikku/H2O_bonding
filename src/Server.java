@@ -97,11 +97,13 @@ public class Server {
                     id = parts[0].substring(1);
                     action = parts[1];
                     if (parts.length == 3) {
-                        if (action.equals("request")) {
-                            if (id.startsWith("H")) {
-                                hydrogenRequests.add(request);
-                            } else if (id.startsWith("O")) {
-                                oxygenRequests.add(request);
+                        synchronized(Server.class) {
+                            if (action.equals("request")) {
+                                if (id.startsWith("H")) {
+                                    hydrogenRequests.add(request);
+                                } else if (id.startsWith("O")) {
+                                    oxygenRequests.add(request);
+                                }
                             }
                         }
                         System.out.println("Received: " + request);
