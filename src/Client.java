@@ -2,25 +2,32 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-public class OxygenClient {
+public class Client {
     public static void main(String[] args) {
-        int M = Integer.parseInt(args[0]);
+        if (args.length < 2) {
+            System.err.println("Usage: java Client <type> <count>");
+            return;
+        }
+
+        String type = args[0].toLowerCase();
+        int count = Integer.parseInt(args[1]);
+
         String clientType, response, timestamp = "";
 
         try (Socket socket = new Socket("localhost", 12345);
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
-            out.println("o");
+            out.println(type);
             clientType = in.readLine();
             System.out.println("Received: " + clientType);
 
-            for (int i = 1; i <= M; i++) {
+            for (int i = 1; i <= count; i++) {
                 timestamp = new Date().toString();
-                String request = "(O" + i + ", request, " + timestamp + ")";
+                String request = "(" + type.toUpperCase().charAt(0) + i + ", request, " + timestamp + ")";
                 out.println(request);
                 timestamp = new Date().toString();
-                String logMessage = "(O" + i + ", request, " + timestamp + ")";
+                String logMessage = "(" + type.toUpperCase().charAt(0) + i + ", request, " + timestamp + ")";
                 System.out.println("Sent: " + logMessage);
             }
 
