@@ -48,24 +48,24 @@ public class Server {
             oxygen = oxygenRequests.remove(0).split(", ")[0].substring(1);
             System.out.println("Bonded " + (++bondIndex) + ": " + hydrogen1 + ", " + hydrogen2 + ", " + oxygen);
 
-            timeStamp = new Date().toString();
+			Date currTime = new Date();
+			long timeAsInt = currTime.getTime();
+            timeStamp = currTime.toString();
             logMessage = "(" + hydrogen1 + ", bonded, " + timeStamp + ")";
             sendToClients(hydrogenClients, logMessage);
             System.out.println("Sent: " + logMessage);
 
-            timeStamp = new Date().toString();
             logMessage = "(" + hydrogen2 + ", bonded, " + timeStamp + ")";
             sendToClients(hydrogenClients, logMessage);
             System.out.println("Sent: " + logMessage);
 
-            timeStamp = new Date().toString();
             logMessage = "(" + oxygen + ", bonded, " + timeStamp + ")";
             sendToClients(oxygenClients, logMessage);
             System.out.println("Sent: " + logMessage);
 
             // Store the data to a file
             try (BufferedWriter writer = new BufferedWriter(new FileWriter("bonding_log.txt", true))) {
-                writer.write(hydrogen1 + ", " + hydrogen2 + ", " + oxygen + ", " + timeStamp + ", " + logMessage);
+                writer.write(hydrogen1 + ", " + hydrogen2 + ", " + oxygen + ", " + timeAsInt + ", " + logMessage);
                 writer.newLine();
             } catch (IOException e) {
                 e.printStackTrace();
