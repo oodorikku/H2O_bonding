@@ -65,7 +65,7 @@ public class Server {
 
             // Store the data to a file
             try (BufferedWriter writer = new BufferedWriter(new FileWriter("bonding_log.txt", true))) {
-                writer.write(hydrogen1 + ", " + hydrogen2 + ", " + oxygen + ", " + timeAsInt + ", " + logMessage);
+                writer.write(hydrogen1 " " + hydrogen2 + " " + oxygen + " " + timeAsInt + " " + logMessage);
                 writer.newLine();
             } catch (IOException e) {
                 e.printStackTrace();
