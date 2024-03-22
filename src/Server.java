@@ -1,6 +1,10 @@
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
 
 public class Server {
     private static final int PORT = 12345;
@@ -58,11 +62,19 @@ public class Server {
             logMessage = "(" + oxygen + ", bonded, " + timeStamp + ")";
             sendToClients(oxygenClients, logMessage);
             System.out.println("Sent: " + logMessage);
-            
+
+            // Store the data to a file
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter("bonding_log.txt", true))) {
+                writer.write(hydrogen1 + ", " + hydrogen2 + ", " + oxygen + ", " + timeStamp + ", " + logMessage);
+                writer.newLine();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             return true;
         }
         return false;
-    }    
+    }
     
     private static synchronized void sendToClients(List<PrintWriter> clients, String message) {
         for (PrintWriter client : clients) {
