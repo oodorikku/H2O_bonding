@@ -1,3 +1,5 @@
+from datetime import datetime
+
 def parse_logs(h_log, o_log, server_log):
     """
     Parses the logs from H, O, and Server machines into structured data.
@@ -38,34 +40,6 @@ def parse_logs(h_log, o_log, server_log):
         parsed_logs["Server"].append(parse_log_entry(entry))
         
     return parsed_logs
-
-# Example log inputs
-h_log = [
-    "Sent: (H1, request, Sat Mar 23 20:33:35 CST 2024)",
-    "Sent: (H2, request, Sat Mar 23 20:33:35 CST 2024)",
-    "Received: (H1, bonded, Sat Mar 23 20:33:35 CST 2024)",
-    "Received: (H2, bonded, Sat Mar 23 20:33:35 CST 2024)"
-]
-
-o_log = [
-    "Sent: (O1, request, Sat Mar 23 20:33:35 CST 2024)",
-    "Sent: (O2, request, Sat Mar 23 20:33:35 CST 2024)",
-    "Received: (O1, bonded, Sat Mar 23 20:33:35 CST 2024)"
-]
-
-server_log = [
-    "Received: (H1, request, Sat Mar 23 20:33:35 CST 2024)",
-    "Received: (O1, request, Sat Mar 23 20:33:35 CST 2024)",
-    "Received: (H2, request, Sat Mar 23 20:33:35 CST 2024)",
-    "Received: (O2, request, Sat Mar 23 20:33:35 CST 2024)",
-    "Bond: 1, H1, H2, O1, Sat Mar 23 21:43:05 CST 2024",
-    "Sent: (H1, bonded, Sat Mar 23 20:33:36 CST 2024)",
-    "Sent: (H2, bonded, Sat Mar 23 20:33:36 CST 2024)",
-    "Sent: (O1, bonded, Sat Mar 23 20:33:36 CST 2024)"
-]
-
-
-from datetime import datetime
 
 # Helper function to convert log timestamps to datetime objects for comparison
 def parse_timestamp(timestamp_str):
@@ -202,16 +176,34 @@ def check_all_bonds_have_requested_molecules(server_log):
     }
     
     for bond in server_log["Bond"]:
-        #print("time:", bond["timestamp"])
         bond_timestamp = to_datetime(bond["timestamp"])
         # Check H and O molecules involved in the bond
         for molecule in bond["H"] + bond["O"]:
-            if molecule not in request_timestamps or request_timestamps[molecule] >= bond_timestamp:
+            if molecule not in request_timestamps: # if the molecule is not in the request timestamps then it is invalid
+                print("Molecule not requested: ", molecule)
+                return False
+            if request_timestamps[molecule] > bond_timestamp: # if the request timestamp is later than the bond timestamp then it is invalid
+                print(molecule, request_timestamps[molecule], bond_timestamp)
                 return False
     return True
 
+def read_log_file(filename):
+    with open(filename, 'r') as file:
+        return [line.strip() for line in file]
+
+
+
+# Use the function to read the log files
+h_log = read_log_file('./src/h_log.txt') # Change path name manually if it cant be found
+o_log = read_log_file('./src/o_log.txt')
+server_log = read_log_file('./src/server_log.txt')
 # Running the final check with the corrected assumption
 parsed_logs = parse_logs(h_log, o_log, server_log)
 check_results = run_checks(parsed_logs)
 for result in check_results: print(check_results[result], result[0:])
-print(check_all_bonds_have_requested_molecules(parse_server_log(server_log)), "Check 4: Server verifies: All bonds used H/O that have already been requested to be bonded by the client via timestamp checking:")
+print(check_all_bonds_have_requested_molecules(parse_server_log(server_log)), "Check 4: Server verifies: All bonds used H/O that have already been requested to be bonded by the client via timestamp checking")
+
+# READ ME
+# WHEN YOU RUN THE CODE, MAKE SURE TO CHANGE THE PATH OF THE LOG FILES MANUALLY
+# ALSO IF THERE IS A FALSE IN THE CHECK RESULTS, IT PROBABLY MEANS YOU NEED TO RUN THE SERVER AND CLIENT AGAIN BUT REMEMBER TO DELETE THE OLD LOGS FIRST
+# DELETE THE OLD LOGS FIRST BEFORE RUNNING THE SERVER AND CLIENT AGAIN OR ELSE IT WILL CATENATE THE OLD LOGS WITH THE NEW LOGS AND IT WILL CAUSE TEST FAILURES

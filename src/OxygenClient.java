@@ -3,6 +3,15 @@ import java.net.*;
 import java.util.*;
 
 public class OxygenClient {
+    private static void appendToLogFile(String message) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("o_log.txt", true))) {
+            writer.write(message);
+            writer.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void main(String[] args) {
         int M = Integer.parseInt(args[0]);
         String clientType, response, timestamp = "";
@@ -22,10 +31,12 @@ public class OxygenClient {
                 timestamp = new Date().toString();
                 String logMessage = "(O" + i + ", request, " + timestamp + ")";
                 System.out.println("Sent: " + logMessage);
+                appendToLogFile("Sent: " + logMessage);
             }
 
             while ((response = in.readLine()) != null) {
                 System.out.println("Received: " + response);
+                appendToLogFile("Received: " + response);
             }
         } catch (IOException e) {
             e.printStackTrace();

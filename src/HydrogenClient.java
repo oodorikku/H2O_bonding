@@ -3,6 +3,15 @@ import java.net.*;
 import java.util.*;
 
 public class HydrogenClient {
+    private static void appendToLogFile(String message) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("h_log.txt", true))) {
+            writer.write(message);
+            writer.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void main(String[] args) {
         int N = Integer.parseInt(args[0]);
         String clientType, response, timestamp = "";
@@ -22,10 +31,12 @@ public class HydrogenClient {
                 timestamp = new Date().toString();
                 String logMessage = "(H" + i + ", request, " + timestamp + ")";
                 System.out.println("Sent: " + logMessage);
+                appendToLogFile("Sent: " + logMessage);
             }
 
             while ((response = in.readLine()) != null) {
                 System.out.println("Received: " + response);
+                appendToLogFile("Received: " + response);
             }
         } catch (IOException e) {
             e.printStackTrace();
