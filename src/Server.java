@@ -43,14 +43,15 @@ public class Server {
         String hydrogen1, hydrogen2, oxygen, timeStamp, logMessage = "";
 
         if (hydrogenRequests.size() >= 2 && oxygenRequests.size() >= 1) {
-            hydrogen1 = hydrogenRequests.remove(0).split(", ")[0].substring(1);
-            hydrogen2 = hydrogenRequests.remove(0).split(", ")[0].substring(1);
-            oxygen = oxygenRequests.remove(0).split(", ")[0].substring(1);
-            System.out.println("Bonded " + (++bondIndex) + ": " + hydrogen1 + ", " + hydrogen2 + ", " + oxygen);
-
 			Date currTime = new Date();
 			long timeAsInt = currTime.getTime();
             timeStamp = currTime.toString();
+
+            hydrogen1 = hydrogenRequests.remove(0).split(", ")[0].substring(1);
+            hydrogen2 = hydrogenRequests.remove(0).split(", ")[0].substring(1);
+            oxygen = oxygenRequests.remove(0).split(", ")[0].substring(1);
+            System.out.println("Bond: " + (++bondIndex) + ", " + hydrogen1 + ", " + hydrogen2 + ", " + oxygen + ", " + timeStamp);
+
             logMessage = "(" + hydrogen1 + ", bonded, " + timeStamp + ")";
             sendToClients(hydrogenClients, logMessage);
             System.out.println("Sent: " + logMessage);
