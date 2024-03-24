@@ -3,6 +3,10 @@ import java.net.*;
 import java.util.*;
 
 public class OxygenClient {
+    private static Date firstBondTime;
+    private static Date lastBondTime;
+    private static boolean firstBondTimeRecorded = false;
+
     private static void appendToLogFile(String message) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("o_log.txt", true))) {
             writer.write(message);
@@ -15,6 +19,20 @@ public class OxygenClient {
     public static void main(String[] args) {
         int M = Integer.parseInt(args[0]);
         String clientType, response, timestamp = "";
+
+        //SIGINT hook
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                //Check if a bond has occurred yet (failsafe)
+                if (!firstBondTimeRecorded) {
+                    System.out.println("No bonds have been received yet.");
+                    return;
+                }
+                //Print first and last bond time to console
+                System.out.println("First bond time: " + firstBondTime.toString());
+                System.out.println("Last bond time: " + lastBondTime.toString());
+            }
+        });
 
         try (Socket socket = new Socket("localhost", 12345);
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
@@ -33,6 +51,11 @@ public class OxygenClient {
             }
 
             while ((response = in.readLine()) != null) {
+                if (!firstBondTimeRecorded) {
+                    firstBondTime = new Date();
+                    firstBondTimeRecorded = true;
+                }
+                lastBondTime = new Date();
                 System.out.println("Received: " + response);
                 appendToLogFile("Received: " + response);
             }
