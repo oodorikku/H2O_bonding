@@ -15,11 +15,31 @@ public class Server {
     private static List<PrintWriter> oxygenClients = new ArrayList<>();
     private static int bondIndex = 0;
 
+    //We need to record the first and last bond time
+    private static Date firstBondTime;
+    private static Date lastBondTime;
+    private static boolean firstBondTimeRecorded = false;
+
     public static void main(String[] args) {
         PrintWriter out;
         BufferedReader in;
         String clientType = "";
         Socket socket;
+
+        //SIGINT hook
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            //TODO clean up this copilot code
+            public void run() {
+                //Check if a bond has occurred yet (failsafe)
+                if (!firstBondTimeRecorded) {
+                    System.out.println("No bonds have occurred yet.");
+                    return;
+                }
+                //Print first and last bond time to console
+                System.out.println("First bond time: " + firstBondTime.toString());
+                System.out.println("Last bond time: " + lastBondTime.toString());
+            }
+        });
 
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             System.out.println("Server is running!");
@@ -38,6 +58,7 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
     private static void appendToLogFile(String message) {
@@ -56,6 +77,12 @@ public class Server {
 			Date currTime = new Date();
 			long timeAsInt = currTime.getTime();
             timeStamp = currTime.toString();
+
+            lastBondTime = currTime;
+            if (!firstBondTimeRecorded) {
+                firstBondTime = currTime;
+                firstBondTimeRecorded = true;
+            }
 
             hydrogen1 = hydrogenRequests.remove(0).split(", ")[0].substring(1);
             hydrogen2 = hydrogenRequests.remove(0).split(", ")[0].substring(1);
