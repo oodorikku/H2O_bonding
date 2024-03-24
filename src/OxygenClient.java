@@ -28,10 +28,8 @@ public class OxygenClient {
                 timestamp = new Date().toString();
                 String request = "(O" + i + ", request, " + timestamp + ")";
                 out.println(request);
-                timestamp = new Date().toString();
-                String logMessage = "(O" + i + ", request, " + timestamp + ")";
-                System.out.println("Sent: " + logMessage);
-                appendToLogFile("Sent: " + logMessage);
+                System.out.println("Sent: " + request);
+                appendToLogFile("Sent: " + request);
             }
 
             while ((response = in.readLine()) != null) {
