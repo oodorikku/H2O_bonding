@@ -19,6 +19,8 @@ public class HydrogenClient {
     public static void main(String[] args) {
         int N = Integer.parseInt(args[0]);
         String clientType, response, timestamp = "";
+        String ip = args[1];
+
         //SIGINT hook
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
@@ -33,7 +35,7 @@ public class HydrogenClient {
             }
         });
 
-        try (Socket socket = new Socket("localhost", 12345);
+        try (Socket socket = new Socket(ip, 12345);
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
