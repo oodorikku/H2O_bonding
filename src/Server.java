@@ -15,11 +15,28 @@ public class Server {
     private static List<PrintWriter> oxygenClients = new ArrayList<>();
     private static int bondIndex = 0;
 
+    private static Date firstBondTime;
+    private static Date lastBondTime;
+
     public static void main(String[] args) {
         PrintWriter out;
         BufferedReader in;
         String clientType = "";
         Socket socket;
+
+        //SIGINT hook
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                //Check if a bond has occurred yet (failsafe)
+                if (bondIndex == 0) {
+                    System.out.println("No bonds have been received yet.");
+                    return;
+                }
+                //Print first and last bond time to console
+                System.out.println("First bond time: " + firstBondTime.toString());
+                System.out.println("Last bond time: " + lastBondTime.toString());
+            }
+        });
 
         new Thread(() -> {
             while (true) {
@@ -72,6 +89,11 @@ public class Server {
 			Date currTime = new Date();
 			long timeAsInt = currTime.getTime();
             timeStamp = currTime.toString();
+
+            lastBondTime = currTime;
+            if (bondIndex == 0) {
+                firstBondTime = currTime;
+            }
 
             hydrogen1 = hydrogenRequests.remove(0).split(", ")[0].substring(1);
             hydrogen2 = hydrogenRequests.remove(0).split(", ")[0].substring(1);

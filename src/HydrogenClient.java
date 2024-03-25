@@ -3,6 +3,10 @@ import java.net.*;
 import java.util.*;
 
 public class HydrogenClient {
+    private static Date firstBondTime;
+    private static Date lastBondTime;
+    private static boolean firstBondTimeRecorded = false;
+
     private static synchronized void appendToLogFile(String message) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("h_log.txt", true))) {
             writer.write(message);
@@ -16,7 +20,19 @@ public class HydrogenClient {
         int N = Integer.parseInt(args[0]);
         String clientType, timestamp = "";
 
-        
+        //SIGINT hook
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                //Check if a bond has occurred yet (failsafe)
+                if (!firstBondTimeRecorded) {
+                    System.out.println("No bonds have been received yet.");
+                    return;
+                }
+                //Print first and last bond time to console
+                System.out.println("First bond time: " + firstBondTime.toString());
+                System.out.println("Last bond time: " + lastBondTime.toString());
+            }
+        });
 
         try (Socket socket = new Socket("localhost", 12345);
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
@@ -29,6 +45,11 @@ public class HydrogenClient {
                  
                 String response;
                 while ((response = in.readLine()) != null) {
+                    lastBondTime = new Date();
+                    if (!firstBondTimeRecorded) {
+                        firstBondTime = lastBondTime;
+                        firstBondTimeRecorded = true;
+                    }
                     System.out.println("Received: " + response);
                     appendToLogFile("Received: " + response);
                 }
