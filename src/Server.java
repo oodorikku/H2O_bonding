@@ -21,6 +21,22 @@ public class Server {
         String clientType = "";
         Socket socket;
 
+        new Thread(() -> {
+            while (true) {
+                System.out.println("Trying to bond...");
+                synchronized(Server.class) {
+                    if (tryBond()) {
+                        continue;
+                    }
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             System.out.println("Server is running!");
             while (true) {
@@ -135,8 +151,6 @@ public class Server {
                         }
                         System.out.println("Received: " + request);
                         appendToLogFile("Received: " + request);
-
-                        tryBond();
                     }
                 }
             } catch (IOException e) {

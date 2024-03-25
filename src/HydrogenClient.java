@@ -3,7 +3,7 @@ import java.net.*;
 import java.util.*;
 
 public class HydrogenClient {
-    private static void appendToLogFile(String message) {
+    private static synchronized void appendToLogFile(String message) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("h_log.txt", true))) {
             writer.write(message);
             writer.newLine();
@@ -14,15 +14,29 @@ public class HydrogenClient {
 
     public static void main(String[] args) {
         int N = Integer.parseInt(args[0]);
-        String clientType, response, timestamp = "";
+        String clientType, timestamp = "";
+
+        
 
         try (Socket socket = new Socket("localhost", 12345);
-             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+             PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
 
             out.println("h");
-            clientType = in.readLine();
-            System.out.println("Received: " + clientType);
+
+            // Creating a new thread to listen to the socket
+        new Thread(() -> {
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+                 
+                String response;
+                while ((response = in.readLine()) != null) {
+                    System.out.println("Received: " + response);
+                    appendToLogFile("Received: " + response);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+        
 
             for (int i = 1; i <= N; i++) {
                 timestamp = new Date().toString();
@@ -34,12 +48,11 @@ public class HydrogenClient {
                 appendToLogFile("Sent: " + logMessage);
             }
 
-            while ((response = in.readLine()) != null) {
-                System.out.println("Received: " + response);
-                appendToLogFile("Received: " + response);
-            }
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        
+        
     }
 }
