@@ -24,7 +24,7 @@ public class HydrogenClient {
                 out.println(request);
                 timestamp = new Date().toString();
                 String logMessage = "(H" + i + ", request, " + timestamp + ")";
-                //System.out.println("Sent: " + logMessage);
+                System.out.println("Sent: " + logMessage);
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter("h_log.txt", true))) {
                     writer.write("Sent: " + logMessage);
                     writer.newLine();
@@ -34,7 +34,7 @@ public class HydrogenClient {
             }
 
             while ((response = in.readLine()) != null) {
-                //System.out.println("Received: " + response);
+                System.out.println("Received: " + response);
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter("h_log.txt", true))) {
                     writer.write("Received: " + response);
                     writer.newLine();

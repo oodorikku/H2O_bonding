@@ -59,24 +59,24 @@ public class Server {
             hydrogen1 = hydrogenRequests.remove(0).split(", ")[0].substring(1);
             hydrogen2 = hydrogenRequests.remove(0).split(", ")[0].substring(1);
             oxygen = oxygenRequests.remove(0).split(", ")[0].substring(1);
-            //System.out.println("Bond: " + (++bondIndex) + ", " + hydrogen1 + ", " + hydrogen2 + ", " + oxygen + ", " + timeStamp);
+            System.out.println("Bond: " + (++bondIndex) + ", " + hydrogen1 + ", " + hydrogen2 + ", " + oxygen + ", " + timeStamp);
             appendToLogFile("Bond: " + (++bondIndex) + ", " + hydrogen1 + ", " + hydrogen2 + ", " + oxygen + ", " + timeStamp);
 
             logMessage = "(" + hydrogen1 + ", bonded, " + timeStamp + ")";
             sendToClients(hydrogenClients, logMessage);
-           // System.out.println("Sent: " + logMessage);
+            System.out.println("Sent: " + logMessage);
             appendToLogFile("Sent: " + logMessage);
 
             logMessage = "(" + hydrogen2 + ", bonded, " + timeStamp + ")";
             sendToClients(hydrogenClients, logMessage);
-            //System.out.println("Sent: " + logMessage);
+            System.out.println("Sent: " + logMessage);
             appendToLogFile("Sent: " + logMessage);
 
             logMessage = "(" + oxygen + ", bonded, " + timeStamp + ")";
             sendToClients(oxygenClients, logMessage);
-            //System.out.println("Sent: " + logMessage);
+            System.out.println("Sent: " + logMessage);
             appendToLogFile("Sent: " + logMessage);
-
+            
             return true;
         }
         return false;
@@ -124,7 +124,7 @@ public class Server {
                                 }
                             }
                         }
-                        //System.out.println("Received: " + request);
+                        System.out.println("Received: " + request);
                         appendToLogFile("Received: " + request);
 
                         tryBond();
