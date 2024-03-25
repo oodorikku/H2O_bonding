@@ -2,6 +2,8 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+
+
 public class Server {
     private static final int PORT = 12345;
     private static List<String> hydrogenRequests = new ArrayList<>();
@@ -15,6 +17,9 @@ public class Server {
         BufferedReader in;
         String clientType = "";
         Socket socket;
+
+        File file = new File("server_log.txt");
+        if(file.exists()){file.delete();}
 
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             System.out.println("Server is running!");
@@ -35,34 +40,47 @@ public class Server {
         }
     }
 
+    private static void appendToLogFile(String message) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("server_log.txt", true))) {
+            writer.write(message);
+            writer.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static synchronized boolean tryBond() {
         String hydrogen1, hydrogen2, oxygen, timeStamp, logMessage = "";
 
         if (hydrogenRequests.size() >= 2 && oxygenRequests.size() >= 1) {
+			Date currTime = new Date();
+            timeStamp = currTime.toString();
+
             hydrogen1 = hydrogenRequests.remove(0).split(", ")[0].substring(1);
             hydrogen2 = hydrogenRequests.remove(0).split(", ")[0].substring(1);
             oxygen = oxygenRequests.remove(0).split(", ")[0].substring(1);
-            System.out.println("Bonded " + (++bondIndex) + ": " + hydrogen1 + ", " + hydrogen2 + ", " + oxygen);
+            //System.out.println("Bond: " + (++bondIndex) + ", " + hydrogen1 + ", " + hydrogen2 + ", " + oxygen + ", " + timeStamp);
+            appendToLogFile("Bond: " + (++bondIndex) + ", " + hydrogen1 + ", " + hydrogen2 + ", " + oxygen + ", " + timeStamp);
 
-            timeStamp = new Date().toString();
             logMessage = "(" + hydrogen1 + ", bonded, " + timeStamp + ")";
             sendToClients(hydrogenClients, logMessage);
-            System.out.println("Sent: " + logMessage);
+           // System.out.println("Sent: " + logMessage);
+            appendToLogFile("Sent: " + logMessage);
 
-            timeStamp = new Date().toString();
             logMessage = "(" + hydrogen2 + ", bonded, " + timeStamp + ")";
             sendToClients(hydrogenClients, logMessage);
-            System.out.println("Sent: " + logMessage);
+            //System.out.println("Sent: " + logMessage);
+            appendToLogFile("Sent: " + logMessage);
 
-            timeStamp = new Date().toString();
             logMessage = "(" + oxygen + ", bonded, " + timeStamp + ")";
             sendToClients(oxygenClients, logMessage);
-            System.out.println("Sent: " + logMessage);
-            
+            //System.out.println("Sent: " + logMessage);
+            appendToLogFile("Sent: " + logMessage);
+
             return true;
         }
         return false;
-    }    
+    }
     
     private static synchronized void sendToClients(List<PrintWriter> clients, String message) {
         for (PrintWriter client : clients) {
@@ -97,14 +115,17 @@ public class Server {
                     id = parts[0].substring(1);
                     action = parts[1];
                     if (parts.length == 3) {
-                        if (action.equals("request")) {
-                            if (id.startsWith("H")) {
-                                hydrogenRequests.add(request);
-                            } else if (id.startsWith("O")) {
-                                oxygenRequests.add(request);
+                        synchronized(Server.class) {
+                            if (action.equals("request")) {
+                                if (id.startsWith("H")) {
+                                    hydrogenRequests.add(request);
+                                } else if (id.startsWith("O")) {
+                                    oxygenRequests.add(request);
+                                }
                             }
                         }
-                        System.out.println("Received: " + request);
+                        //System.out.println("Received: " + request);
+                        appendToLogFile("Received: " + request);
 
                         tryBond();
                     }
@@ -119,5 +140,6 @@ public class Server {
                 }
             }
         }
+        
     }
 }
