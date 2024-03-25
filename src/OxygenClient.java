@@ -34,7 +34,7 @@ public class OxygenClient {
             }
         });
         
-        try (Socket socket = new Socket("localhost", 12345);
+        try (Socket socket = new Socket(args[1], 12345);
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
 
             out.println("o");
