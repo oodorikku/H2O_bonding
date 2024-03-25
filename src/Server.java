@@ -61,7 +61,7 @@ public class Server {
             hydrogen2 = hydrogenRequests.remove(0).split(", ")[0].substring(1);
             oxygen = oxygenRequests.remove(0).split(", ")[0].substring(1);
             System.out.println("Bond: " + (++bondIndex) + ", " + hydrogen1 + ", " + hydrogen2 + ", " + oxygen + ", " + timeStamp);
-            appendToLogFile("Bond: " + (++bondIndex) + ", " + hydrogen1 + ", " + hydrogen2 + ", " + oxygen + ", " + timeStamp);
+            appendToLogFile("Bond: " + (bondIndex) + ", " + hydrogen1 + ", " + hydrogen2 + ", " + oxygen + ", " + timeStamp);
 
             logMessage = "(" + hydrogen1 + ", bonded, " + timeStamp + ")";
             sendToClients(hydrogenClients, logMessage);
