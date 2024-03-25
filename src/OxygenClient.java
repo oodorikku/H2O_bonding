@@ -22,18 +22,19 @@ public class OxygenClient {
             out.println("o");
 
             // Creating a new thread to listen to the socket
-        new Thread(() -> {
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-                 
-                String response;
-                while ((response = in.readLine()) != null) {
-                    System.out.println("Received: " + response);
-                    appendToLogFile("Received: " + response);
+            Thread listenerThread = new Thread(() -> {
+                try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+                    
+                    String response;
+                    while ((response = in.readLine()) != null) {
+                        System.out.println("Received: " + response);
+                        appendToLogFile("Received: " + response);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }).start();
+            });
+            listenerThread.start();
 
             for (int i = 1; i <= N; i++) {
                 timestamp = new Date().toString();
@@ -45,9 +46,12 @@ public class OxygenClient {
                 appendToLogFile("Sent: " + logMessage);
             }
 
-        } catch (IOException e) {
+            listenerThread.join();
+
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
+        
 
         
     }

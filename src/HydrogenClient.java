@@ -24,7 +24,7 @@ public class HydrogenClient {
             out.println("h");
 
             // Creating a new thread to listen to the socket
-        new Thread(() -> {
+        Thread listenerThread = new Thread(() -> {
             try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
                  
                 String response;
@@ -35,7 +35,9 @@ public class HydrogenClient {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }).start();
+        });
+        
+        listenerThread.start();
         
 
             for (int i = 1; i <= N; i++) {
@@ -48,9 +50,11 @@ public class HydrogenClient {
                 appendToLogFile("Sent: " + logMessage);
             }
 
-        } catch (IOException e) {
+            listenerThread.join();
+
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
-        }
+        } 
 
         
         
