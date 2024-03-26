@@ -1,6 +1,11 @@
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
+
 
 public class Server {
     private static final int PORT = 12345;
@@ -10,11 +15,44 @@ public class Server {
     private static List<PrintWriter> oxygenClients = new ArrayList<>();
     private static int bondIndex = 0;
 
+    private static Date firstBondTime;
+    private static Date lastBondTime;
+
     public static void main(String[] args) {
         PrintWriter out;
         BufferedReader in;
         String clientType = "";
         Socket socket;
+
+        //SIGINT hook
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                //Check if a bond has occurred yet (failsafe)
+                if (bondIndex == 0) {
+                    System.out.println("No bonds have been received yet.");
+                    return;
+                }
+                //Print first and last bond time to console
+                System.out.println("First bond time: " + firstBondTime.toString());
+                System.out.println("Last bond time: " + lastBondTime.toString());
+            }
+        });
+
+        new Thread(() -> {
+            while (true) {
+                System.out.println("Trying to bond...");
+                synchronized(Server.class) {
+                    if (tryBond()) {
+                        continue;
+                    }
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
 
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             System.out.println("Server is running!");
@@ -35,34 +73,61 @@ public class Server {
         }
     }
 
+    private static void appendToLogFile(String message) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("server_log.txt", true))) {
+            writer.write(message);
+            writer.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static synchronized boolean tryBond() {
         String hydrogen1, hydrogen2, oxygen, timeStamp, logMessage = "";
 
         if (hydrogenRequests.size() >= 2 && oxygenRequests.size() >= 1) {
+			Date currTime = new Date();
+			long timeAsInt = currTime.getTime();
+            timeStamp = currTime.toString();
+
+            lastBondTime = currTime;
+            if (bondIndex == 0) {
+                firstBondTime = currTime;
+            }
+
             hydrogen1 = hydrogenRequests.remove(0).split(", ")[0].substring(1);
             hydrogen2 = hydrogenRequests.remove(0).split(", ")[0].substring(1);
             oxygen = oxygenRequests.remove(0).split(", ")[0].substring(1);
-            System.out.println("Bonded " + (++bondIndex) + ": " + hydrogen1 + ", " + hydrogen2 + ", " + oxygen);
+            System.out.println("Bond: " + (++bondIndex) + ", " + hydrogen1 + ", " + hydrogen2 + ", " + oxygen + ", " + timeStamp);
+            appendToLogFile("Bond: " + (bondIndex) + ", " + hydrogen1 + ", " + hydrogen2 + ", " + oxygen + ", " + timeStamp);
 
-            timeStamp = new Date().toString();
             logMessage = "(" + hydrogen1 + ", bonded, " + timeStamp + ")";
             sendToClients(hydrogenClients, logMessage);
             System.out.println("Sent: " + logMessage);
+            appendToLogFile("Sent: " + logMessage);
 
-            timeStamp = new Date().toString();
             logMessage = "(" + hydrogen2 + ", bonded, " + timeStamp + ")";
             sendToClients(hydrogenClients, logMessage);
             System.out.println("Sent: " + logMessage);
+            appendToLogFile("Sent: " + logMessage);
 
-            timeStamp = new Date().toString();
             logMessage = "(" + oxygen + ", bonded, " + timeStamp + ")";
             sendToClients(oxygenClients, logMessage);
             System.out.println("Sent: " + logMessage);
-            
+            appendToLogFile("Sent: " + logMessage);
+
+            // Store the data to a file
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter("bonding_log.txt", true))) {
+                writer.write(hydrogen1 + " " + hydrogen2 + " " + oxygen + " " + timeAsInt + " " + logMessage);
+                writer.newLine();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             return true;
         }
         return false;
-    }    
+    }
     
     private static synchronized void sendToClients(List<PrintWriter> clients, String message) {
         for (PrintWriter client : clients) {
@@ -97,16 +162,17 @@ public class Server {
                     id = parts[0].substring(1);
                     action = parts[1];
                     if (parts.length == 3) {
-                        if (action.equals("request")) {
-                            if (id.startsWith("H")) {
-                                hydrogenRequests.add(request);
-                            } else if (id.startsWith("O")) {
-                                oxygenRequests.add(request);
+                        synchronized(Server.class) {
+                            if (action.equals("request")) {
+                                if (id.startsWith("H")) {
+                                    hydrogenRequests.add(request);
+                                } else if (id.startsWith("O")) {
+                                    oxygenRequests.add(request);
+                                }
                             }
                         }
                         System.out.println("Received: " + request);
-
-                        tryBond();
+                        appendToLogFile("Received: " + request);
                     }
                 }
             } catch (IOException e) {
@@ -119,5 +185,6 @@ public class Server {
                 }
             }
         }
+        
     }
 }
