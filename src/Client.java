@@ -38,6 +38,8 @@ public class OxygenClient {
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
 
             out.println("o");
+            clientType = in.readLine();
+            System.out.println("Received: " + clientType);
 
             // Creating a new thread to listen to the socket
             Thread listenerThread = new Thread(() -> {
